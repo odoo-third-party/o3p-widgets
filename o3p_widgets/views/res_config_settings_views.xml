@@ -40,12 +40,12 @@
                                        domain="[('mtype', '=', 'lastnbtab')]"
                                        context="{'default_mtype': 'lastnbtab'}">
                                     <list editable="bottom">
-                                        <field name="mtype" invisible="1"/>
-                                        <field name="tvalue" string="URL Prefix" required="1"/>
+                                        <field name="mtype" invisible="True"/>
+                                        <field name="tvalue" string="prefix" required="1"/>
                                         <field name="nvalue"
-                                               string="Tab Index (from 0)"
+                                               string="tab"
                                                required="1"
-                                               options="{'type': 'number', 'min': 0}"/>
+                                               options="{'type':'number','min': 0}"/>
                                     </list>
                                 </field>
                             </div>
