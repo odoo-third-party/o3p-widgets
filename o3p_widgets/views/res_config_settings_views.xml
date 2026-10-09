@@ -40,7 +40,7 @@
                                        domain="[('mtype', '=', 'lastnbtab')]"
                                        context="{'default_mtype': 'lastnbtab'}">
                                     <list editable="bottom">
-                                        <field name="mtype" invisible="True"/>
+                                        <field name="mtype" column_invisible="True"/>
                                         <field name="tvalue" string="prefix" required="1"/>
                                         <field name="nvalue"
                                                string="tab"
