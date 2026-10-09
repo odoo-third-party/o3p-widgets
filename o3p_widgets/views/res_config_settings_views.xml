@@ -36,11 +36,10 @@
                             <field name="notebook_default_tabs"/>
                             <div class="content-group mt16" invisible="not notebook_default_tabs">
                                 <field name="notebook_default_tab_memory_ids"
-                                       widget="o3p_inline_create_many2many"
                                        nolabel="1"
                                        domain="[('mtype', '=', 'lastnbtab')]"
                                        context="{'default_mtype': 'lastnbtab'}">
-                                    <list editable="bottom" string="defaults">
+                                    <list string="defaults">
                                         <field name="mtype" column_invisible="True"/>
                                         <field name="tvalue"
                                                string="prefix"
@@ -51,6 +50,19 @@
                                                required="1"
                                                options="{'type':'number','min': 0}"/>
                                     </list>
+                                    <form string="Default notebook tab">
+                                        <group>
+                                            <field name="mtype" invisible="1"/>
+                                            <field name="tvalue"
+                                                   string="URL Prefix"
+                                                   placeholder="contacts/"
+                                                   required="1"/>
+                                            <field name="nvalue"
+                                                   string="Tab Index (from 0)"
+                                                   required="1"
+                                                   options="{'type': 'number', 'min': 0}"/>
+                                        </group>
+                                    </form>
                                 </field>
                             </div>
                         </setting>
