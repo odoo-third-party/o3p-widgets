@@ -1,5 +1,5 @@
 {
-    "name": "o3p_widgets",
+    "name": "o3p - widgets",
     "summary": "Shared web widgets for Odoo.",
     "version": "20.0.1.0.0",
     "category": "Technical",
