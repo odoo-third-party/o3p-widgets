@@ -39,9 +39,12 @@
                                        nolabel="1"
                                        domain="[('mtype', '=', 'lastnbtab')]"
                                        context="{'default_mtype': 'lastnbtab'}">
-                                    <list editable="bottom">
+                                    <list editable="bottom" string="defaults">
                                         <field name="mtype" column_invisible="True"/>
-                                        <field name="tvalue" string="prefix" required="1"/>
+                                        <field name="tvalue"
+                                               string="prefix"
+                                               placeholder="contacts/"
+                                               required="1"/>
                                         <field name="nvalue"
                                                string="tab"
                                                required="1"
