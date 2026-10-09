@@ -4,7 +4,7 @@ import { browser } from "@web/core/browser/browser";
 import { Notebook } from "@web/core/notebook/notebook";
 import { patch } from "@web/core/utils/patch";
 import { session } from "@web/session";
-import { onMounted } from "@odoo/owl";
+import { onMounted, onPatched, onWillUnmount } from "@odoo/owl";
 
 const STORAGE_KEY = "o3p_widgets.notebook_tabs.v1";
 const MAX_ENTRY_AGE = 48 * 60 * 60 * 1000;
@@ -116,11 +116,7 @@ function rememberCurrentPage(notebook) {
     writeEntries(entries);
 }
 
-async function restoreCurrentPage(notebook) {
-    const storageId = getNotebookStorageId(notebook);
-    if (!storageId) {
-        return;
-    }
+async function restoreCurrentPage(notebook, storageId) {
     const entries = readEntries();
     const entry = entries[storageId];
     if (!entry) {
@@ -140,11 +136,27 @@ async function restoreCurrentPage(notebook) {
     }
 }
 
+function scheduleRestore(notebook) {
+    browser.cancelAnimationFrame(notebook.o3pNotebookRestoreFrame);
+    notebook.o3pNotebookRestoreFrame = browser.requestAnimationFrame(() => {
+        const storageId = getNotebookStorageId(notebook);
+        if (!storageId || storageId === notebook.o3pNotebookStorageId) {
+            return;
+        }
+        notebook.o3pNotebookStorageId = storageId;
+        restoreCurrentPage(notebook, storageId);
+    });
+}
+
 if (persistenceEnabled) {
     patch(Notebook.prototype, {
         setup() {
             super.setup(...arguments);
-            onMounted(() => restoreCurrentPage(this));
+            this.o3pNotebookStorageId = null;
+            this.o3pNotebookRestoreFrame = null;
+            onMounted(() => scheduleRestore(this));
+            onPatched(() => scheduleRestore(this));
+            onWillUnmount(() => browser.cancelAnimationFrame(this.o3pNotebookRestoreFrame));
         },
 
         async activatePage(pageIndex) {
