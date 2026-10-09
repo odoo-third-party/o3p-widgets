@@ -15,6 +15,7 @@
     ],
     "assets": {
         "web.assets_backend": [
+            "o3p_widgets/static/src/js/inline_create_many2many_field.js",
             "o3p_widgets/static/src/js/list_renderer_minimum_lines.js",
             "o3p_widgets/static/src/js/notebook_tab_persistence.js",
             "o3p_widgets/static/src/js/text_field_autoresize.js",
