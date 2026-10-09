@@ -12,11 +12,13 @@ native `4`. It controls the minimum row count in list and embedded one-to-many
 views; an available **Add a line** row counts toward the configured total. A
 value of `0` removes filler rows. The native renderer remains unpatched at `4`.
 
-Notebook tabs are remembered locally for each browser, URL, and notebook position.
-When a page is reopened, each notebook restores its most recently selected visible
-tab. Saved entries expire automatically after 48 hours. Storage failures never
-block the interface and are reported only as browser console warnings. The feature
-can be disabled with **Remember notebook tabs** in the O3P Widgets settings area.
+Notebook tabs are remembered locally for each browser, normalized URL, and notebook
+position in the page's `.o_notebook` selector result. URL query and hash parameters
+are discarded except for `id` and `model`. When a page is reopened, each notebook
+restores its most recently selected visible tab. Saved entries expire automatically
+after 48 hours. Storage failures never block the interface and are reported only as
+browser console warnings. The feature can be disabled with **Remember notebook
+tabs** in the O3P Widgets settings area and is disabled by default on first install.
 
 ## Deployment
 

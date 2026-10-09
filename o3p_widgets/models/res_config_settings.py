@@ -26,7 +26,7 @@ class ResConfigSettings(models.TransientModel):
     remember_notebook_tabs = fields.Boolean(
         string="Remember notebook tabs",
         config_parameter=REMEMBER_NOTEBOOK_TABS_PARAM,
-        default=True,
+        default=False,
     )
 
     @api.constrains("minimum_text_lines")

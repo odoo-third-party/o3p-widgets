@@ -9,7 +9,7 @@ import { onMounted } from "@odoo/owl";
 const STORAGE_KEY = "o3p_widgets.notebook_tabs.v1";
 const MAX_ENTRY_AGE = 48 * 60 * 60 * 1000;
 const WARNING_PREFIX = "[o3p_widgets] Notebook tab persistence";
-const persistenceEnabled = session.o3p_widgets?.remember_notebook_tabs ?? true;
+const persistenceEnabled = session.o3p_widgets?.remember_notebook_tabs ?? false;
 
 function warn(message, error) {
     console.warn(`${WARNING_PREFIX}: ${message}`, error);
@@ -64,6 +64,26 @@ function readEntries() {
     return entries;
 }
 
+function getHashParameters(hash) {
+    const hashValue = hash.replace(/^#!/, "").replace(/^#/, "");
+    const queryStart = hashValue.indexOf("?");
+    return new URLSearchParams(queryStart >= 0 ? hashValue.slice(queryStart + 1) : hashValue);
+}
+
+function getPageUrl() {
+    const url = new URL(browser.location.href);
+    const hashParameters = getHashParameters(url.hash);
+    const identityParameters = new URLSearchParams();
+    for (const parameterName of ["id", "model"]) {
+        const value = hashParameters.get(parameterName) ?? url.searchParams.get(parameterName);
+        if (value !== null) {
+            identityParameters.set(parameterName, value);
+        }
+    }
+    const identityQuery = identityParameters.toString();
+    return `${url.origin}${url.pathname}${identityQuery ? `?${identityQuery}` : ""}`;
+}
+
 function getNotebookStorageId(notebook) {
     const notebookElement = notebook.activePane()?.closest(".o_notebook");
     if (!notebookElement) {
@@ -75,7 +95,7 @@ function getNotebookStorageId(notebook) {
     if (notebookIndex < 0) {
         return null;
     }
-    return JSON.stringify([browser.location.href, notebookIndex]);
+    return `${getPageUrl()}::notebook[${notebookIndex}]`;
 }
 
 function forgetEntry(storageId, entries) {

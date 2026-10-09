@@ -10,6 +10,6 @@
     </record>
     <record id="ir_config_parameter_remember_notebook_tabs" model="ir.config_parameter">
         <field name="key">o3p_widgets.remember_notebook_tabs</field>
-        <field name="value">True</field>
+        <field name="value">False</field>
     </record>
 </odoo>

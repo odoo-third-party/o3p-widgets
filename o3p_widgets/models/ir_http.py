@@ -26,7 +26,7 @@ class IrHttp(models.AbstractModel):
         remember_notebook_tabs = (
             self.env["ir.config_parameter"]
             .sudo()
-            .get_bool(REMEMBER_NOTEBOOK_TABS_PARAM, True)
+            .get_bool(REMEMBER_NOTEBOOK_TABS_PARAM, False)
         )
         result["o3p_widgets"] = {
             "minimum_text_lines": max(1, minimum_text_lines),
