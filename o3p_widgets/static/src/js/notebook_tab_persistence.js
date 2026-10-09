@@ -10,9 +10,16 @@ const STORAGE_KEY = "o3p_widgets.notebook_tabs.v1";
 const MAX_ENTRY_AGE = 48 * 60 * 60 * 1000;
 const WARNING_PREFIX = "[o3p_widgets] Notebook tab persistence";
 const persistenceEnabled = session.o3p_widgets?.remember_notebook_tabs ?? false;
+const defaultTabsEnabled = session.o3p_widgets?.default_notebook_tabs ?? false;
+const sessionDefaultTabRules = session.o3p_widgets?.default_notebook_tab_rules;
+const defaultTabRules = Array.isArray(sessionDefaultTabRules) ? sessionDefaultTabRules : [];
 
 function warn(message, error) {
-    console.warn(`${WARNING_PREFIX}: ${message}`, error);
+    if (error === undefined) {
+        console.warn(`${WARNING_PREFIX}: ${message}`);
+    } else {
+        console.warn(`${WARNING_PREFIX}: ${message}`, error);
+    }
 }
 
 function writeEntries(entries) {
@@ -81,7 +88,8 @@ function getPageUrl() {
         }
     }
     const identityQuery = identityParameters.toString();
-    return `${url.origin}${url.pathname}${identityQuery ? `?${identityQuery}` : ""}`;
+    const pagePath = url.pathname.replace(/^\/odoo(?:\/|$)/, "").replace(/^\//, "");
+    return `${pagePath}${identityQuery ? `?${identityQuery}` : ""}`;
 }
 
 function getNotebookStorageId(notebook) {
@@ -95,7 +103,7 @@ function getNotebookStorageId(notebook) {
     if (notebookIndex < 0) {
         return null;
     }
-    return `${getPageUrl()}::notebook[${notebookIndex}]`;
+    return `${getPageUrl()}::[${notebookIndex}]`;
 }
 
 function forgetEntry(storageId, entries) {
@@ -104,6 +112,9 @@ function forgetEntry(storageId, entries) {
 }
 
 function rememberCurrentPage(notebook) {
+    if (!persistenceEnabled) {
+        return;
+    }
     const storageId = getNotebookStorageId(notebook);
     if (!storageId || typeof notebook.state.currentPage !== "string") {
         return;
@@ -116,23 +127,60 @@ function rememberCurrentPage(notebook) {
     writeEntries(entries);
 }
 
+function getDefaultPageId(notebook, storageId) {
+    if (!defaultTabsEnabled) {
+        return null;
+    }
+    const matchingRules = defaultTabRules
+        .filter(
+            (rule) =>
+                rule &&
+                typeof rule.prefix === "string" &&
+                Number.isInteger(rule.tab_index) &&
+                rule.tab_index >= 0 &&
+                storageId.startsWith(rule.prefix)
+        )
+        .sort((left, right) => right.prefix.length - left.prefix.length);
+    if (!matchingRules.length) {
+        return null;
+    }
+    const rule = matchingRules[0];
+    const pageId = notebook.navItems[rule.tab_index]?.[0];
+    if (typeof pageId !== "string") {
+        warn(
+            `tab index ${rule.tab_index} is outside notebook ${storageId} for prefix ${rule.prefix}`
+        );
+        return null;
+    }
+    return pageId;
+}
+
 async function restoreCurrentPage(notebook, storageId) {
-    const entries = readEntries();
-    const entry = entries[storageId];
-    if (!entry) {
-        return;
-    }
-    if (!notebook.navItems.some(([pageId]) => pageId === entry.pageId)) {
-        forgetEntry(storageId, entries);
-        return;
-    }
-    try {
-        await notebook.activatePage(entry.pageId);
-        if (notebook.state.currentPage !== entry.pageId) {
+    let pageId = null;
+    if (persistenceEnabled) {
+        const entries = readEntries();
+        const entry = entries[storageId];
+        if (entry && notebook.navItems.some(([navPageId]) => navPageId === entry.pageId)) {
+            pageId = entry.pageId;
+        } else if (entry) {
             forgetEntry(storageId, entries);
         }
+    }
+    pageId ||= getDefaultPageId(notebook, storageId);
+    if (!pageId) {
+        return;
+    }
+
+    try {
+        await notebook.activatePage(pageId);
+        if (persistenceEnabled && notebook.state.currentPage !== pageId) {
+            const entries = readEntries();
+            if (entries[storageId]) {
+                forgetEntry(storageId, entries);
+            }
+        }
     } catch (error) {
-        warn("could not restore the saved tab", error);
+        warn("could not restore the selected tab", error);
     }
 }
 
@@ -148,7 +196,7 @@ function scheduleRestore(notebook) {
     });
 }
 
-if (persistenceEnabled) {
+if (persistenceEnabled || defaultTabsEnabled) {
     patch(Notebook.prototype, {
         setup() {
             super.setup(...arguments);

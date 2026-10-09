@@ -2,6 +2,8 @@ from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 from .ir_http import (
+    DEFAULT_NOTEBOOK_TABS_PARAM,
+    LAST_NOTEBOOK_TAB_MEMORY_TYPE,
     MINIMUM_LISTS_LINES_PARAM,
     MINIMUM_TEXT_LINES_PARAM,
     NATIVE_MINIMUM_LISTS_LINES,
@@ -28,6 +30,34 @@ class ResConfigSettings(models.TransientModel):
         config_parameter=REMEMBER_NOTEBOOK_TABS_PARAM,
         default=False,
     )
+    notebook_default_tabs = fields.Boolean(
+        string="Default notebook tabs",
+        config_parameter=DEFAULT_NOTEBOOK_TABS_PARAM,
+        default=False,
+    )
+    notebook_default_tab_memory_ids = fields.Many2many(
+        comodel_name="o3p.widget.memory",
+        string="Default notebook tab rules",
+        compute="_compute_notebook_default_tab_memory_ids",
+        inverse="_inverse_notebook_default_tab_memory_ids",
+        readonly=False,
+    )
+
+    @api.depends_context("uid")
+    def _compute_notebook_default_tab_memory_ids(self):
+        memories = self.env["o3p.widget.memory"].search(
+            [("mtype", "=", LAST_NOTEBOOK_TAB_MEMORY_TYPE)], order="id"
+        )
+        for settings in self:
+            settings.notebook_default_tab_memory_ids = memories
+
+    def _inverse_notebook_default_tab_memory_ids(self):
+        Memory = self.env["o3p.widget.memory"]
+        for settings in self:
+            selected = settings.notebook_default_tab_memory_ids
+            selected.write({"mtype": LAST_NOTEBOOK_TAB_MEMORY_TYPE})
+            existing = Memory.search([("mtype", "=", LAST_NOTEBOOK_TAB_MEMORY_TYPE)])
+            (existing - selected).unlink()
 
     @api.constrains("minimum_text_lines")
     def _check_minimum_text_lines(self):

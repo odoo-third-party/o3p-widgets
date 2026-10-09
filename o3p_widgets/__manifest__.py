@@ -1,7 +1,7 @@
 {
     "name": "o3p - widgets",
     "summary": "Shared web widgets for Odoo.",
-    "version": "20.0.1.1.0",
+    "version": "20.0.1.2.0",
     "category": "Technical",
     "author": "O3P",
     "website": "https://github.com/odoo-third-party/o3p-widgets",
@@ -9,6 +9,7 @@
     "depends": ["base_setup", "web"],
     "sequence": 1,
     "data": [
+        "security/ir.access.csv",
         "data/config_parameter_data.xml",
         "views/res_config_settings_views.xml",
     ],
