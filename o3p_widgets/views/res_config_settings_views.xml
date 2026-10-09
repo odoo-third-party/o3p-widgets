@@ -11,6 +11,7 @@
                      name="o3p_widgets"
                      groups="base.group_system">
                     <block title="odoo widgets settings">
+                        <separator string="Elements Height"/>
                         <setting id="o3p_widgets_minimum_text_lines"
                                  string="Minimum lines for text fields."
                                  help="Minimum number of lines displayed by text fields. The native Odoo value is 2; changes take effect after refreshing the browser.">
@@ -23,6 +24,7 @@
                             <field name="minimum_lists_lines"
                                    options="{'type': 'number', 'min': 0}"/>
                         </setting>
+                        <separator string="Notebook Tabs"/>
                         <setting id="o3p_widgets_remember_notebook_tabs"
                                  string="Remember notebook tabs"
                                  help="Remember and restore the last open tab in each notebook for 48 hours in this browser. Changes take effect after refreshing the browser.">
