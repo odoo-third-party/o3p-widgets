@@ -1,8 +1,10 @@
 /** @odoo-module **/
 
 import { browser } from "@web/core/browser/browser";
+import { router, routerBus } from "@web/core/browser/router";
 import { Notebook } from "@web/core/notebook/notebook";
 import { patch } from "@web/core/utils/patch";
+import { useBus } from "@web/core/utils/hooks";
 import { session } from "@web/session";
 import { onMounted, onPatched, onWillUnmount } from "@odoo/owl";
 
@@ -13,6 +15,8 @@ const persistenceEnabled = session.o3p_widgets?.remember_notebook_tabs ?? false;
 const defaultTabsEnabled = session.o3p_widgets?.default_notebook_tabs ?? false;
 const sessionDefaultTabRules = session.o3p_widgets?.default_notebook_tab_rules;
 const defaultTabRules = Array.isArray(sessionDefaultTabRules) ? sessionDefaultTabRules : [];
+const activeNotebooks = new Set();
+let routeRestoreTimer = null;
 
 function warn(message, error) {
     if (error === undefined) {
@@ -78,7 +82,10 @@ function getHashParameters(hash) {
 }
 
 function getPageUrl() {
-    const url = new URL(browser.location.href);
+    const canonicalUrl = router.current
+        ? router.stateToUrl(router.current)
+        : browser.location.href;
+    const url = new URL(canonicalUrl, browser.location.origin);
     const hashParameters = getHashParameters(url.hash);
     const identityParameters = new URLSearchParams();
     for (const parameterName of ["id", "model"]) {
@@ -155,6 +162,14 @@ function getDefaultPageId(notebook, storageId) {
     return pageId;
 }
 
+function getNativeDefaultPageId(notebook) {
+    const visiblePageIds = notebook.navItems.map(([pageId]) => pageId);
+    if (notebook.props.defaultPage && visiblePageIds.includes(notebook.props.defaultPage)) {
+        return notebook.props.defaultPage;
+    }
+    return visiblePageIds[0] ?? null;
+}
+
 async function restoreCurrentPage(notebook, storageId) {
     let pageId = null;
     if (persistenceEnabled) {
@@ -167,10 +182,17 @@ async function restoreCurrentPage(notebook, storageId) {
         }
     }
     pageId ||= getDefaultPageId(notebook, storageId);
+    pageId ||= getNativeDefaultPageId(notebook);
     if (!pageId) {
         return;
     }
 
+    if (getNotebookStorageId(notebook) !== storageId) {
+        scheduleRestore(notebook);
+        return;
+    }
+
+    notebook.o3pNotebookRestoring = true;
     try {
         await notebook.activatePage(pageId);
         if (persistenceEnabled && notebook.state.currentPage !== pageId) {
@@ -181,6 +203,8 @@ async function restoreCurrentPage(notebook, storageId) {
         }
     } catch (error) {
         warn("could not restore the selected tab", error);
+    } finally {
+        notebook.o3pNotebookRestoring = false;
     }
 }
 
@@ -196,20 +220,49 @@ function scheduleRestore(notebook) {
     });
 }
 
+function scheduleRouteRestore() {
+    browser.clearTimeout(routeRestoreTimer);
+    routeRestoreTimer = browser.setTimeout(() => {
+        for (const notebook of activeNotebooks) {
+            scheduleRestore(notebook);
+        }
+    });
+}
+
 if (persistenceEnabled || defaultTabsEnabled) {
+    patch(router, {
+        pushState() {
+            const result = super.pushState(...arguments);
+            scheduleRouteRestore();
+            return result;
+        },
+
+        replaceState() {
+            const result = super.replaceState(...arguments);
+            scheduleRouteRestore();
+            return result;
+        },
+    });
+
     patch(Notebook.prototype, {
         setup() {
             super.setup(...arguments);
             this.o3pNotebookStorageId = null;
             this.o3pNotebookRestoreFrame = null;
+            this.o3pNotebookRestoring = false;
+            activeNotebooks.add(this);
+            useBus(routerBus, "ROUTE_CHANGE", () => scheduleRestore(this));
             onMounted(() => scheduleRestore(this));
             onPatched(() => scheduleRestore(this));
-            onWillUnmount(() => browser.cancelAnimationFrame(this.o3pNotebookRestoreFrame));
+            onWillUnmount(() => {
+                activeNotebooks.delete(this);
+                browser.cancelAnimationFrame(this.o3pNotebookRestoreFrame);
+            });
         },
 
         async activatePage(pageIndex) {
             await super.activatePage(...arguments);
-            if (this.state.currentPage === pageIndex) {
+            if (!this.o3pNotebookRestoring && this.state.currentPage === pageIndex) {
                 rememberCurrentPage(this);
             }
         },
