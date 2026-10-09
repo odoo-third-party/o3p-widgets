@@ -6,6 +6,7 @@ from .ir_http import (
     MINIMUM_TEXT_LINES_PARAM,
     NATIVE_MINIMUM_LISTS_LINES,
     NATIVE_MINIMUM_TEXT_LINES,
+    REMEMBER_NOTEBOOK_TABS_PARAM,
 )
 
 
@@ -21,6 +22,11 @@ class ResConfigSettings(models.TransientModel):
         string="Minimum list lines",
         config_parameter=MINIMUM_LISTS_LINES_PARAM,
         default=NATIVE_MINIMUM_LISTS_LINES,
+    )
+    remember_notebook_tabs = fields.Boolean(
+        string="Remember notebook tabs",
+        config_parameter=REMEMBER_NOTEBOOK_TABS_PARAM,
+        default=True,
     )
 
     @api.constrains("minimum_text_lines")

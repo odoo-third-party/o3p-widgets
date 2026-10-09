@@ -8,4 +8,8 @@
         <field name="key">o3p_widgets.minimum_lists_lines</field>
         <field name="value">4</field>
     </record>
+    <record id="ir_config_parameter_remember_notebook_tabs" model="ir.config_parameter">
+        <field name="key">o3p_widgets.remember_notebook_tabs</field>
+        <field name="value">True</field>
+    </record>
 </odoo>

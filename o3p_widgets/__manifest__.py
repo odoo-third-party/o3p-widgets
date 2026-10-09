@@ -1,7 +1,7 @@
 {
     "name": "o3p - widgets",
     "summary": "Shared web widgets for Odoo.",
-    "version": "20.0.1.0.0",
+    "version": "20.0.1.1.0",
     "category": "Technical",
     "author": "O3P",
     "website": "https://github.com/odoo-third-party/o3p-widgets",
@@ -15,6 +15,7 @@
     "assets": {
         "web.assets_backend": [
             "o3p_widgets/static/src/js/list_renderer_minimum_lines.js",
+            "o3p_widgets/static/src/js/notebook_tab_persistence.js",
             "o3p_widgets/static/src/js/text_field_autoresize.js",
         ],
     },

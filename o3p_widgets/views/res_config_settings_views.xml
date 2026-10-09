@@ -23,6 +23,11 @@
                             <field name="minimum_lists_lines"
                                    options="{'type': 'number', 'min': 0}"/>
                         </setting>
+                        <setting id="o3p_widgets_remember_notebook_tabs"
+                                 string="Remember notebook tabs"
+                                 help="Remember and restore the last open tab in each notebook for 48 hours in this browser. Changes take effect after refreshing the browser.">
+                            <field name="remember_notebook_tabs"/>
+                        </setting>
                     </block>
                 </app>
             </xpath>
