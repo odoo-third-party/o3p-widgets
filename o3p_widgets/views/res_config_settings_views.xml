@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.o3p.widgets</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="O3P Widgets"
+                     string="O3P Widgets"
+                     name="o3p_widgets"
+                     groups="base.group_system">
+                    <block title="Widget Settings">
+                        <setting id="o3p_widgets_minimum_text_lines"
+                                 string="Minimum text lines"
+                                 help="Minimum number of lines displayed by text fields. The native Odoo value is 2; changes take effect after refreshing the browser.">
+                            <field name="minimum_text_lines"
+                                   options="{'type': 'number', 'min': 1}"/>
+                        </setting>
+                        <setting id="o3p_widgets_minimum_lists_lines"
+                                 string="Minimum list lines"
+                                 help="Minimum number of rows displayed by list views. The Add a line row counts toward the total. The native Odoo value is 4; changes take effect after refreshing the browser.">
+                            <field name="minimum_lists_lines"
+                                   options="{'type': 'number', 'min': 0}"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

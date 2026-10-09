@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="ir_config_parameter_minimum_text_lines" model="ir.config_parameter">
+        <field name="key">o3p_widgets.minimum_text_lines</field>
+        <field name="value">2</field>
+    </record>
+    <record id="ir_config_parameter_minimum_lists_lines" model="ir.config_parameter">
+        <field name="key">o3p_widgets.minimum_lists_lines</field>
+        <field name="value">4</field>
+    </record>
+</odoo>
